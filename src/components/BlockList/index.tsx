@@ -1,32 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios, { AxiosResponse } from "axios";
 import { Link } from "react-router-dom";
-
-type Block = {
-  bits: number;
-  fees: number;
-  hash: string;
-  height: number;
-  mainchain: boolean;
-  merkle: string;
-  nonce: number;
-  outputs: number;
-  previous: string;
-  size: number;
-  subsidy: number;
-  time: number;
-  tx: string[];
-  version: number;
-  weight: number;
-  work: number;
-};
-
-type BlockHeight = {
-  block_index: number;
-  hash: string;
-  height: number;
-  time: number;
-};
+import { Block, BlockHeight } from "../../types/bitcoin";
 
 const MAX_LIST_SIZE = 15;
 

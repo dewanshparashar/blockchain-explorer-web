@@ -12,3 +12,15 @@
 .blockList {
   padding: 15px;
 }
+
+.blockDetailRow {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  border-bottom: 1px solid gray;
+}
+
+.transactionRow {
+  display: flex;
+  flex-direction: column;
+}

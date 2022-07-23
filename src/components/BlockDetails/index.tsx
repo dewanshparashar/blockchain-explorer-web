@@ -1,63 +1,88 @@
-import axios, { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { SingleBlock, Transaction } from "../../types/bitcoin";
+import { DetailsTemplate } from "../../types/utils";
 
-type TransactionOutput = {
-  type: number;
-  spent: boolean;
-  value: number;
-  spending_outpoints: { tx_index: number; n: number }[];
-  n: number;
-  tx_index: number;
-  script: string;
-};
-
-type TransactionInput = {
-  sequence: number;
-  witness: number;
-  script: number;
-  index: number;
-  prev_out: TransactionOutput[];
-};
-
-type Transaction = {
-  hash: string;
-  ver: number;
-  vin_sz: number;
-  vout_sz: number;
-  size: number;
-  weight: number;
-  fee: number;
-  relayed_by: string;
-  lock_time: number;
-  tx_index: number;
-  double_spend: boolean;
-  time: number;
-  block_index: number;
-  block_height: number;
-  inputs: TransactionInput[];
-  out: TransactionOutput[];
-};
-
-type SingleBlock = {
-  hash: string;
-  ver: number;
-  prev_block: string;
-  mrkl_root: string;
-  time: number;
-  bits: number;
-  nonce: number;
-  n_tx: number;
-  size: number;
-  block_index: number;
-  main_chain: boolean;
-  height: number;
-  received_time: number;
-  relayed_by: string;
-  tx: Transaction[];
-};
+const DETAILS_CONFIG: DetailsTemplate[] = [
+  {
+    key: "hash",
+    label: "Hash",
+    accessor: (block: SingleBlock) => block.hash,
+  },
+  {
+    key: "confirmations",
+    label: "Confirmations",
+    accessor: (block: SingleBlock) => block.confirmations,
+  },
+  {
+    key: "timestamp",
+    label: "Timestamp",
+    accessor: (block: SingleBlock) => block.time,
+  },
+  {
+    key: "miner",
+    label: "Miner",
+    accessor: (block: SingleBlock) => block.relayed_by,
+  },
+  {
+    key: "txCount",
+    label: "Number of Transactions",
+    accessor: (block: SingleBlock) => block.n_tx,
+  },
+  {
+    key: "difficulty",
+    label: "Difficulty",
+    accessor: (block: SingleBlock) => block.work,
+  },
+  {
+    key: "merkelRoot",
+    label: "Merkel Root",
+    accessor: (block: SingleBlock) => block.mrkl_root,
+  },
+  {
+    key: "version",
+    label: "Version",
+    accessor: (block: SingleBlock) => block.ver,
+  },
+  {
+    key: "bits",
+    label: "Bits",
+    accessor: (block: SingleBlock) => block.bits,
+  },
+  {
+    key: "weight",
+    label: "Weight",
+    accessor: (block: SingleBlock) => block.weight,
+  },
+  {
+    key: "size",
+    label: "Size",
+    accessor: (block: SingleBlock) => block.size,
+  },
+  {
+    key: "nonce",
+    label: "Nonce",
+    accessor: (block: SingleBlock) => block.nonce,
+  },
+  {
+    key: "volume",
+    label: "Transaction Volume",
+    accessor: (block: SingleBlock) => `${block.nonce} BTC`,
+  },
+  {
+    key: "blockReward",
+    label: "Block Reward",
+    accessor: (block: SingleBlock) => `${block.nonce} BTC`,
+  },
+  {
+    key: "feeReward",
+    label: "Fee Reward",
+    accessor: (block: SingleBlock) => `${block.fees} BTC`,
+  },
+];
 
 const BlockDetails = () => {
   const { id } = useParams() || {};
@@ -86,7 +111,29 @@ const BlockDetails = () => {
     <div>
       {loading && "Loading..."}
       {!loading && error && "Something went wrong.. this is not correct.."}
-      {!loading && !error && <div>Helloooo details!</div>}
+      {!loading && !error && blockDetails && (
+        <div className="blockDetails">
+          <h1>Block Details</h1>
+          {DETAILS_CONFIG.map((template: DetailsTemplate) => (
+            <div className="blockDetailRow" key={template.key}>
+              <div className="key">{template.label}</div>
+              <div className="value">{template.accessor(blockDetails)}</div>
+            </div>
+          ))}
+
+          <hr />
+
+          <h2>Transactions</h2>
+          {blockDetails.tx.map((transaction: Transaction) => (
+            <div className="transactionRow">
+              <b>Hash : {transaction.hash}</b>
+              <b>Fee : {transaction.fee} BTC</b>
+              {JSON.stringify(transaction)}
+              <hr />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
