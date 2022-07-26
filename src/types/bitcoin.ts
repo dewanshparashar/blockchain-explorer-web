@@ -32,6 +32,7 @@ export type TransactionOutput = {
   n: number;
   tx_index: number;
   script: string;
+  addr: string;
 };
 
 export type TransactionInput = {

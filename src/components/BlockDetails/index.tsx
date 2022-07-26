@@ -3,7 +3,12 @@ import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { SingleBlock, Transaction } from "../../types/bitcoin";
+import {
+  SingleBlock,
+  Transaction as TransactionType,
+  TransactionInput,
+  TransactionOutput,
+} from "../../types/bitcoin";
 import { DetailsTemplate } from "../../types/utils";
 
 const DETAILS_CONFIG: DetailsTemplate[] = [
@@ -84,6 +89,23 @@ const DETAILS_CONFIG: DetailsTemplate[] = [
   },
 ];
 
+const Transaction = ({ trx }: { trx: TransactionOutput }) => {
+  return (
+    <div style={{ display: "flex", flexDirection: "row" }}>
+      <b>
+        {trx.addr ? (
+          trx.addr
+        ) : (
+          <i style={{ color: "green" }}>COINBASE (Newly generated)</i>
+        )}
+      </b>
+      {trx.addr && <div>{trx.value} BTC</div>}
+      {trx.addr && trx.spent && <div style={{ color: "green" }}>S</div>}
+      {trx.addr && !trx.spent && <div style={{ color: "red" }}>U</div>}
+    </div>
+  );
+};
+
 const BlockDetails = () => {
   const { id } = useParams() || {};
 
@@ -124,12 +146,51 @@ const BlockDetails = () => {
           <hr />
 
           <h2>Transactions</h2>
-          {blockDetails.tx.map((transaction: Transaction) => (
+          {blockDetails.tx.map((transaction: TransactionType) => (
             <div className="transactionRow">
               <b>Hash : {transaction.hash}</b>
               <b>Fee : {transaction.fee} BTC</b>
-              {JSON.stringify(transaction)}
-              <hr />
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  border: "2px dashed red",
+                  margin: 10,
+                }}
+              >
+                <div
+                  className="transactionInputs"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {transaction.inputs.map((input: TransactionInput) => (
+                    <>
+                      {input.prev_out?.length &&
+                        input.prev_out.map((output: TransactionOutput) => (
+                          <Transaction trx={output} />
+                        ))}
+
+                      {/* {!input.prev_out?.length && <Transaction />} */}
+                    </>
+                  ))}
+                </div>
+
+                <div
+                  className="transactionOutputs"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {transaction.out.map((output: TransactionOutput) => (
+                    <Transaction trx={output} />
+                  ))}
+                </div>
+              </div>
             </div>
           ))}
         </div>
