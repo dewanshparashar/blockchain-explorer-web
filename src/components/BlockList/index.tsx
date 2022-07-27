@@ -4,6 +4,7 @@ import axios, { AxiosResponse } from "axios";
 import { Link } from "react-router-dom";
 import { Block, BlockHeight } from "../../types/bitcoin";
 import { formatDistanceToNow } from "date-fns";
+import { TailSpin } from "react-loader-spinner";
 
 const MAX_LIST_SIZE = 15;
 
@@ -172,7 +173,7 @@ export const Loader = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 2rem;
+  margin: 150px auto;
 `;
 
 const formatHash = (hash: string): string => {
@@ -258,7 +259,20 @@ const BlockList = () => {
           </div>
         </div>
 
-        {loading && <Loader>Loading...</Loader>}
+        {loading && (
+          <Loader>
+            <TailSpin
+              height="80"
+              width="80"
+              color="rgb(12, 108, 242)"
+              ariaLabel="tail-spin-loading"
+              radius="1"
+              wrapperStyle={{}}
+              wrapperClass=""
+              visible={true}
+            />
+          </Loader>
+        )}
 
         {!loading &&
           blocksList.map((blockRow: Block) => (
