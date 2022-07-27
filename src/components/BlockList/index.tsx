@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Block, BlockHeight } from "../../types/bitcoin";
 import { formatDistanceToNow } from "date-fns";
 import { TailSpin } from "react-loader-spinner";
+import Loader from "../common/Loader";
 
 const MAX_LIST_SIZE = 15;
 
@@ -169,13 +170,6 @@ export const SectionHeading = styled.div`
   backdrop-filter: blur(2px);
 `;
 
-export const Loader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 150px auto;
-`;
-
 const formatHash = (hash: string): string => {
   while (hash.substring(0, 1) === "0" && hash.length > 1) {
     hash = hash.substring(1, 9999);
@@ -259,20 +253,7 @@ const BlockList = () => {
           </div>
         </div>
 
-        {loading && (
-          <Loader>
-            <TailSpin
-              height="80"
-              width="80"
-              color="rgb(12, 108, 242)"
-              ariaLabel="tail-spin-loading"
-              radius="1"
-              wrapperStyle={{}}
-              wrapperClass=""
-              visible={true}
-            />
-          </Loader>
-        )}
+        {loading && <Loader />}
 
         {!loading &&
           blocksList.map((blockRow: Block) => (

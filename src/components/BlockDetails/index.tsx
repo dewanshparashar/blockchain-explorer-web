@@ -12,6 +12,7 @@ import {
 } from "../../types/bitcoin";
 import { DetailsTemplate } from "../../types/utils";
 import { SectionHeading } from "../BlockList";
+import Loader from "../common/Loader";
 
 const DETAILS_CONFIG: DetailsTemplate[] = [
   {
@@ -200,12 +201,13 @@ const BlockDetails = () => {
   }, [id]);
 
   return (
-    <div>
-      {loading && "Loading..."}
+    <>
+      <SectionHeading>Block Details</SectionHeading>
+      {loading && <Loader />}
       {!loading && error && "Something went wrong.. this is not correct.."}
       {!loading && !error && blockDetails && (
-        <div className="blockDetails">
-          <SectionHeading>Block Details</SectionHeading>
+        <>
+        
           {DETAILS_CONFIG.map((template: DetailsTemplate) => (
             <Row key={template.key}>
               <RowLabel>{template.label}</RowLabel>
@@ -257,9 +259,9 @@ const BlockDetails = () => {
               </div>
             </div>
           ))}
-        </div>
+        </>
       )}
-    </div>
+    </>
   );
 };
 
