@@ -40,7 +40,7 @@ export type TransactionInput = {
   witness: number;
   script: number;
   index: number;
-  prev_out: TransactionOutput[];
+  prev_out: TransactionOutput;
 };
 
 export type Transaction = {
@@ -62,7 +62,7 @@ export type Transaction = {
   out: TransactionOutput[];
 };
 
-export type SingleBlock = {
+export type BlockDetails = {
   hash: string;
   ver: number;
   prev_block: string;
@@ -83,3 +83,5 @@ export type SingleBlock = {
   work: number;
   confirmations: number;
 };
+
+export type TransactionMode = "input" | "output";

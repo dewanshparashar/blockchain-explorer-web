@@ -1,7 +1,7 @@
-import { SingleBlock } from "./bitcoin";
+import { BlockDetails } from "./bitcoin";
 
 export type DetailsTemplate = {
   key: string;
   label: string;
-  accessor: (block: SingleBlock) => number | string;
+  accessor: (block: BlockDetails) => number | string;
 };
