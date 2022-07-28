@@ -171,6 +171,19 @@ export const SectionHeading = styled.div`
   backdrop-filter: blur(2px);
 `;
 
+const ListSection = styled.div`
+  width: 100%;
+  overflow: scroll;
+  margin-top: 2rem;
+`;
+
+const ListSectionResponsiveScroll = styled.div`
+  min-width: 700px;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 2rem;
+`;
+
 const formatHash = (hash: string): string => {
   while (hash.substring(0, 1) === "0" && hash.length > 1) {
     hash = hash.substring(1, 9999);
@@ -246,7 +259,7 @@ const BlockList = () => {
         </svg>
         <input
           type="text"
-          placeholder="Search for things like address, transaction, block"
+          placeholder="Search for block hash"
           value={searchString}
           onChange={onSearchInput}
           onKeyUp={onSearchKeyUp}
@@ -259,50 +272,54 @@ const BlockList = () => {
       <SectionHeading>Latest Blocks</SectionHeading>
 
       {/* Block-listing section */}
-      <Table className="blockList">
-        <div className="tableHeaderRow">
-          <div style={{ width: "10%" }} className="tableHeader cell">
-            Height
-          </div>
-          <div style={{ width: "40%" }} className="tableHeader cell">
-            Hash
-          </div>
-          <div style={{ width: "15%" }} className="tableHeader cell">
-            Mined
-          </div>
-          <div style={{ width: "15%" }} className="tableHeader cell">
-            Miner
-          </div>
-          <div style={{ width: "20%" }} className="tableHeader cell">
-            Size
-          </div>
-        </div>
-
-        {loading && <Loader />}
-
-        {!loading &&
-          blocksList.map((blockRow: Block) => (
-            <div className="tableRow" key={blockRow.hash}>
-              <div style={{ width: "10%" }} className="cell">
-                {blockRow.height}
+      <ListSection>
+        <ListSectionResponsiveScroll>
+          <Table className="blockList">
+            <div className="tableHeaderRow">
+              <div style={{ width: "10%" }} className="tableHeader cell">
+                Height
               </div>
-              <div style={{ width: "40%" }} className="cell">
-                <StyledLink to={`/block/${blockRow.hash}`}>
-                  {formatHash(blockRow.hash)}
-                </StyledLink>
+              <div style={{ width: "40%" }} className="tableHeader cell">
+                Hash
               </div>
-              <div style={{ width: "15%" }} className="cell">
-                {formatRelativeTime(blockRow.time)}
+              <div style={{ width: "15%" }} className="tableHeader cell">
+                Mined
               </div>
-              <div style={{ width: "15%" }} className="cell">
-                {blockRow.tx?.[0]}
+              <div style={{ width: "15%" }} className="tableHeader cell">
+                Miner
               </div>
-              <div style={{ width: "20%" }} className="cell">
-                {formatSize(blockRow.size)} bytes
+              <div style={{ width: "20%" }} className="tableHeader cell">
+                Size
               </div>
             </div>
-          ))}
-      </Table>
+
+            {loading && <Loader />}
+
+            {!loading &&
+              blocksList.map((blockRow: Block) => (
+                <div className="tableRow" key={blockRow.hash}>
+                  <div style={{ width: "10%" }} className="cell">
+                    {blockRow.height}
+                  </div>
+                  <div style={{ width: "40%" }} className="cell">
+                    <StyledLink to={`/block/${blockRow.hash}`}>
+                      {formatHash(blockRow.hash)}
+                    </StyledLink>
+                  </div>
+                  <div style={{ width: "15%" }} className="cell">
+                    {formatRelativeTime(blockRow.time)}
+                  </div>
+                  <div style={{ width: "15%" }} className="cell">
+                    {blockRow.tx?.[0]}
+                  </div>
+                  <div style={{ width: "20%" }} className="cell">
+                    {formatSize(blockRow.size)} bytes
+                  </div>
+                </div>
+              ))}
+          </Table>
+        </ListSectionResponsiveScroll>
+      </ListSection>
     </>
   );
 };

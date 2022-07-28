@@ -13,7 +13,7 @@ import {
 import { DetailsTemplate } from "../../types/utils";
 import { Button, SectionHeading, StyledLink } from "../BlockList";
 import Loader from "../common/Loader";
-import { MdArrowBack, MdLanguage, MdArrowForward } from "react-icons/md";
+import { MdArrowBack, MdLanguage } from "react-icons/md";
 import { format } from "date-fns";
 
 const DETAILS_CONFIG: DetailsTemplate[] = [
@@ -378,14 +378,28 @@ const FlexRow = styled.div`
   width: 100%;
   align-items: center;
   justify-content: space-between;
+  z-index: 10;
 `;
 
 const TransactionPage = styled.div`
-  min-width: 900px;
+  width: 100%;
   overflow: scroll;
   margin-top: 2rem;
+`;
+
+const TransactionPageResponsiveScroll = styled.div`
+  min-width: 900px;
   display: flex;
   flex-direction: column;
+  padding-bottom: 2rem;
+`;
+
+const Divider = styled.div`
+  width: 100%;
+  height: 2px;
+  margin: 0.5rem 0rem;
+  background: rgb(223, 227, 235);
+  display: block;
 `;
 
 const Transaction = ({
@@ -400,19 +414,24 @@ const Transaction = ({
       <StyledLink to="#" className="hash">
         {trx.addr ? (
           trx.addr
-        ) : (
+        ) : type === "input" ? (
           <div style={{ color: "green" }}>
-            {type === "input"
-              ? "COINBASE (Newly generated coins)"
-              : "OP_RETURN"}
+            COINBASE <br />
+            (Newly generated coins)
           </div>
+        ) : (
+          <div style={{ color: "gray" }}>OP_RETURN</div>
         )}
       </StyledLink>
       <div className="additionalDetails">
         {trx.addr && <div>{trx.value} BTC</div>}
         {!trx.addr && type === "output" && <div>0.00000000 BTC</div>}
-        {trx.addr && trx.spent && <MdLanguage style={{ color: "green" }} />}
-        {trx.addr && !trx.spent && <MdLanguage style={{ color: "red" }} />}
+        {trx.addr && trx.spent && (
+          <MdLanguage style={{ color: "green" }} title="Unspent" />
+        )}
+        {trx.addr && !trx.spent && (
+          <MdLanguage style={{ color: "red" }} title="Spent" />
+        )}
       </div>
     </TransactionRow>
   );
@@ -475,6 +494,8 @@ const BlockDetails = () => {
       )}
       {!loading && !error && blockDetails && (
         <>
+          <Divider />
+          <Text>Block at depth 242424xxxx in the Bitcoin Blockchain.</Text>
           {DETAILS_CONFIG.map((template: DetailsTemplate) => (
             <Row key={template.key}>
               <RowLabel>{template.label}</RowLabel>
@@ -482,96 +503,115 @@ const BlockDetails = () => {
             </Row>
           ))}
 
+          <SectionHeading>
+            <FlexRow>
+              Transactions
+              <Button onClick={handleBackClick}>
+                <MdArrowBack /> Blocks
+              </Button>
+            </FlexRow>
+          </SectionHeading>
+
           <TransactionPage>
-            <SectionHeading>
-              <FlexRow>
-                Transactions
-                <Button onClick={handleBackClick}>
-                  <MdArrowBack /> Blocks
-                </Button>
-              </FlexRow>
-            </SectionHeading>
-
-            {blockDetails.tx
-              .filter((_, index) => index < paginationCount)
-              .map((transaction: TransactionType) => (
-                <TransactionBlock key={transaction.hash}>
-                  <TransactionBlockSection>
-                    <div className="col col1">
-                      <div className="subCol sc1">Hash</div>
-                      <div className="subCol sc2 hash">{transaction.hash}</div>
-                    </div>
-                    <div className="col col2">
-                      <div className="divider"></div>
-                      <div>
-                        {format(
-                          new Date(transaction.time * 1000),
-                          "yyyy-MM-dd hh:mm"
-                        )}
+            <TransactionPageResponsiveScroll>
+              {blockDetails.tx
+                .filter((_, index) => index < paginationCount)
+                .map((transaction: TransactionType) => (
+                  <TransactionBlock key={transaction.hash}>
+                    <TransactionBlockSection>
+                      <div className="col col1">
+                        <div className="subCol sc1">Hash</div>
+                        <div className="subCol sc2 hash">
+                          {transaction.hash}
+                        </div>
                       </div>
-                    </div>
-                  </TransactionBlockSection>
-
-                  <TransactionBlockSection>
-                    <div className="col col1">
-                      <div className="subCol sc1"></div>
-                      <div className="subCol sc2">
+                      <div className="col col2">
+                        <div className="divider"></div>
                         <div>
-                          {transaction.inputs.map(
-                            (input: TransactionInput, index: number) => (
-                              <>
-                                <Transaction
-                                  key={index}
-                                  trx={input.prev_out}
-                                  type="input"
-                                />
-                              </>
+                          {format(
+                            new Date(transaction.time * 1000),
+                            "yyyy-MM-dd hh:mm"
+                          )}
+                        </div>
+                      </div>
+                    </TransactionBlockSection>
+
+                    <TransactionBlockSection>
+                      <div className="col col1">
+                        <div className="subCol sc1"></div>
+                        <div className="subCol sc2">
+                          <div>
+                            {transaction.inputs.map(
+                              (input: TransactionInput, index: number) => (
+                                <>
+                                  <Transaction
+                                    key={index}
+                                    trx={input.prev_out}
+                                    type="input"
+                                  />
+                                </>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="col col2">
+                        <div className="divider">
+                          <svg
+                            enable-background="new 0 0 32 32"
+                            height="32px"
+                            id="svg2"
+                            version="1.1"
+                            viewBox="0 0 32 32"
+                            width="32px"
+                            fill="rgb(51, 159, 123)"
+                          >
+                            <g id="background">
+                              <rect fill="none" height="32" width="32"></rect>
+                            </g>
+                            <g id="arrow_x5F_full_x5F_right">
+                              <polygon points="16,2.001 16,10 2,10 2,22 16,22 16,30 30,16  "></polygon>
+                            </g>
+                          </svg>
+                        </div>
+                        <div>
+                          {transaction.out.map(
+                            (output: TransactionOutput, index: number) => (
+                              <Transaction
+                                key={index}
+                                trx={output}
+                                type="output"
+                              />
                             )
                           )}
                         </div>
                       </div>
-                    </div>
+                    </TransactionBlockSection>
 
-                    <div className="col col2">
-                      <div className="divider">
-                        <MdArrowForward size={20} style={{ color: "green" }} />
+                    <TransactionBlockSection>
+                      <div className="col col1">
+                        <div className="subCol sc1">Fee</div>
+                        <div className="subCol sc2">{transaction.fee} BTC</div>
                       </div>
-                      <div>
-                        {transaction.out.map(
-                          (output: TransactionOutput, index: number) => (
-                            <Transaction
-                              key={index}
-                              trx={output}
-                              type="output"
-                            />
-                          )
-                        )}
+                      <div className="col col2">
+                        <div className="divider"></div>
+                        <div>Total Fee sum - BTC</div>
                       </div>
-                    </div>
-                  </TransactionBlockSection>
-
-                  <TransactionBlockSection>
-                    <div className="col col1">
-                      <div className="subCol sc1">Fee</div>
-                      <div className="subCol sc2">{transaction.fee} BTC</div>
-                    </div>
-                    <div className="col col2">
-                      <div className="divider"></div>
-                      <div>Total Fee sum - BTC</div>
-                    </div>
-                  </TransactionBlockSection>
-                </TransactionBlock>
-              ))}
-
-            <br />
-            <Button
-              onClick={handleLoadModeClick}
-              disabled={blockDetails.tx.length < paginationCount}
-            >
-              Load More Transactions (
-              {`${paginationCount}/${blockDetails.tx.length}`})
-            </Button>
+                    </TransactionBlockSection>
+                  </TransactionBlock>
+                ))}
+            </TransactionPageResponsiveScroll>
           </TransactionPage>
+
+          <br />
+          <Button
+            onClick={handleLoadModeClick}
+            disabled={blockDetails.tx.length < paginationCount}
+          >
+            Load More Transactions (
+            {`${paginationCount}/${blockDetails.tx.length}`})
+          </Button>
         </>
       )}
     </>
