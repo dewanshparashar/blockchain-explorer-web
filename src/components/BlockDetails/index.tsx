@@ -1,7 +1,7 @@
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { useEffect } from "react";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import {
   BlockDetails as BlockDetailsType,
@@ -11,8 +11,10 @@ import {
   TransactionMode,
 } from "../../types/bitcoin";
 import { DetailsTemplate } from "../../types/utils";
-import { SectionHeading } from "../BlockList";
+import { Button, SectionHeading, StyledLink } from "../BlockList";
 import Loader from "../common/Loader";
+import { MdArrowBack, MdLanguage, MdArrowForward } from "react-icons/md";
+import { format } from "date-fns";
 
 const DETAILS_CONFIG: DetailsTemplate[] = [
   {
@@ -152,6 +154,240 @@ const RowValue = styled.div`
   text-align: left;
 `;
 
+const Text = styled.p`
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  box-sizing: border-box;
+  font-weight: 500;
+  font-size: 14px;
+  text-transform: none;
+  font-style: normal;
+  opacity: 1;
+  font-family: Inter, Helvetica, sans-serif;
+  font-feature-settings: "calt" 0;
+  color: rgb(53, 63, 82);
+`;
+
+const BlockLoadingIssue = ({
+  id,
+  errorMessage,
+  handleBackClick,
+}: {
+  id: string | undefined;
+  errorMessage: string | boolean;
+  handleBackClick: () => void;
+}) => {
+  return (
+    <>
+      <Text>
+        <b>Unable to load block details for your query</b>
+        {id && <i>: {id}</i>}
+      </Text>
+
+      {errorMessage && (
+        <p
+          style={{
+            background: "#ffc0cb4f",
+            padding: "1rem",
+            color: "red",
+            borderRadius: "0.25rem",
+          }}
+        >
+          {errorMessage}
+        </p>
+      )}
+
+      <Text>
+        This can be due to any of the two reasons :
+        <ul>
+          <li>
+            The block you were looking for doesn’t exist.{" "}
+            <p>Check for any typos or mistakes in your search query</p>
+          </li>
+          <li>
+            Something went wrong in the backend server while loading the data.{" "}
+            <p>
+              It is recommended to add a CORS-unblocker extension to your Chrome
+              browser before testing.
+            </p>
+          </li>
+        </ul>
+      </Text>
+      <br />
+      <Button onClick={handleBackClick}>
+        <MdArrowBack /> Go Back to Blocks
+      </Button>
+    </>
+  );
+};
+
+const TransactionRow = styled.div`
+  font-size: 100%;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  white-space: nowrap;
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 5px;
+  gap: 10px;
+
+  .hash {
+    width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .additionalDetails {
+    font-size: 100%;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    white-space: nowrap;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    -webkit-box-pack: start;
+    justify-content: flex-start;
+    -webkit-box-align: center;
+    align-items: center;
+    gap: 5px;
+  }
+`;
+
+const TransactionBlock = styled.div`
+  font-size: 100%;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  -webkit-box-pack: start;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  padding: 1rem 0px;
+  border-bottom: 1px solid rgb(223, 227, 235);
+`;
+
+const TransactionBlockSection = styled.div`
+  font-size: 100%;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  box-sizing: border-box;
+  display: flex;
+  -webkit-box-pack: start;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  flex-direction: row;
+
+  .col {
+    font-size: 100%;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    -webkit-box-pack: start;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 50%;
+
+    &.col2 {
+      font-size: 100%;
+      font-style: normal;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      width: calc(100% - 100px);
+      padding: 0.8rem 0px;
+      -webkit-box-pack: end;
+      justify-content: flex-end;
+    }
+
+    .subCol {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .subCol.sc1 {
+      font-size: 100%;
+      font-style: normal;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      width: 100px;
+      padding: 0.8rem 0px;
+      -webkit-box-pack: start;
+      justify-content: flex-start;
+    }
+
+    .subCol.sc2 {
+      font-size: 100%;
+      font-style: normal;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      width: calc(100% - 100px);
+      padding: 0.8rem 0px;
+      -webkit-box-pack: start;
+      justify-content: flex-start;
+    }
+
+    .divider {
+      font-size: 100%;
+      font-style: normal;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      width: 100px;
+      padding: 0.8rem 0px;
+      -webkit-box-pack: end;
+      align-items: flex-start;
+      justify-content: center;
+    }
+  }
+`;
+
+const FlexRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const TransactionPage = styled.div`
+  min-width: 900px;
+  overflow: scroll;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+`;
+
 const Transaction = ({
   trx,
   type,
@@ -160,29 +396,41 @@ const Transaction = ({
   type: TransactionMode;
 }) => {
   return (
-    <div style={{ display: "flex", flexDirection: "row" }}>
-      <b>
+    <TransactionRow>
+      <StyledLink to="#" className="hash">
         {trx.addr ? (
           trx.addr
         ) : (
-          <i style={{ color: "green" }}>
-            {type === "input" ? "COINBASE (Newly generated)" : "OP_RETURN"}
-          </i>
+          <div style={{ color: "green" }}>
+            {type === "input"
+              ? "COINBASE (Newly generated coins)"
+              : "OP_RETURN"}
+          </div>
         )}
-      </b>
-      {trx.addr && <div>{trx.value} BTC</div>}
-      {trx.addr && trx.spent && <div style={{ color: "green" }}>S</div>}
-      {trx.addr && !trx.spent && <div style={{ color: "red" }}>U</div>}
-    </div>
+      </StyledLink>
+      <div className="additionalDetails">
+        {trx.addr && <div>{trx.value} BTC</div>}
+        {!trx.addr && type === "output" && <div>0.00000000 BTC</div>}
+        {trx.addr && trx.spent && <MdLanguage style={{ color: "green" }} />}
+        {trx.addr && !trx.spent && <MdLanguage style={{ color: "red" }} />}
+      </div>
+    </TransactionRow>
   );
 };
 
 const BlockDetails = () => {
   const { id } = useParams() || {};
 
+  let navigate = useNavigate();
+
+  const handleBackClick = (): void => {
+    navigate(`/blocks`, { replace: true });
+  };
+
   const [blockDetails, setBlockDetails] = useState<BlockDetailsType>();
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<boolean | string>(false);
+  const [paginationCount, setPaginationCount] = useState<number>(10);
 
   useEffect(() => {
     if (id) {
@@ -192,22 +440,41 @@ const BlockDetails = () => {
           setBlockDetails(response.data);
           setLoading(false);
         },
-        () => {
+        (error: AxiosError) => {
           setLoading(false);
-          setError(true);
+          const { message } = error || {};
+          setError(message);
         }
       );
     }
   }, [id]);
 
+  const handleLoadModeClick = () => {
+    if (blockDetails && blockDetails.tx.length > paginationCount) {
+      setPaginationCount((prevCount) => prevCount + 10);
+    }
+  };
+
   return (
     <>
-      <SectionHeading>Block Details</SectionHeading>
+      <SectionHeading>
+        <FlexRow>
+          Block Details
+          <Button onClick={handleBackClick}>
+            <MdArrowBack /> Blocks
+          </Button>
+        </FlexRow>
+      </SectionHeading>
       {loading && <Loader />}
-      {!loading && error && "Something went wrong.. this is not correct.."}
+      {!loading && error && (
+        <BlockLoadingIssue
+          id={id}
+          errorMessage={error}
+          handleBackClick={handleBackClick}
+        />
+      )}
       {!loading && !error && blockDetails && (
         <>
-        
           {DETAILS_CONFIG.map((template: DetailsTemplate) => (
             <Row key={template.key}>
               <RowLabel>{template.label}</RowLabel>
@@ -215,50 +482,96 @@ const BlockDetails = () => {
             </Row>
           ))}
 
-          <SectionHeading>Transactions</SectionHeading>
-          {blockDetails.tx.map((transaction: TransactionType) => (
-            <div className="transactionRow">
-              <b>Hash : {transaction.hash}</b>
-              <b>Fee : {transaction.fee} BTC</b>
+          <TransactionPage>
+            <SectionHeading>
+              <FlexRow>
+                Transactions
+                <Button onClick={handleBackClick}>
+                  <MdArrowBack /> Blocks
+                </Button>
+              </FlexRow>
+            </SectionHeading>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  border: "2px dashed red",
-                  margin: 10,
-                }}
-              >
-                <div
-                  className="transactionInputs"
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    border: "1px solid blue",
-                  }}
-                >
-                  {transaction.inputs.map((input: TransactionInput) => (
-                    <>
-                      <Transaction trx={input.prev_out} type="input" />
-                    </>
-                  ))}
-                </div>
+            {blockDetails.tx
+              .filter((_, index) => index < paginationCount)
+              .map((transaction: TransactionType) => (
+                <TransactionBlock key={transaction.hash}>
+                  <TransactionBlockSection>
+                    <div className="col col1">
+                      <div className="subCol sc1">Hash</div>
+                      <div className="subCol sc2 hash">{transaction.hash}</div>
+                    </div>
+                    <div className="col col2">
+                      <div className="divider"></div>
+                      <div>
+                        {format(
+                          new Date(transaction.time * 1000),
+                          "yyyy-MM-dd hh:mm"
+                        )}
+                      </div>
+                    </div>
+                  </TransactionBlockSection>
 
-                <div
-                  className="transactionOutputs"
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  {transaction.out.map((output: TransactionOutput) => (
-                    <Transaction trx={output} type="output" />
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
+                  <TransactionBlockSection>
+                    <div className="col col1">
+                      <div className="subCol sc1"></div>
+                      <div className="subCol sc2">
+                        <div>
+                          {transaction.inputs.map(
+                            (input: TransactionInput, index: number) => (
+                              <>
+                                <Transaction
+                                  key={index}
+                                  trx={input.prev_out}
+                                  type="input"
+                                />
+                              </>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col col2">
+                      <div className="divider">
+                        <MdArrowForward size={20} style={{ color: "green" }} />
+                      </div>
+                      <div>
+                        {transaction.out.map(
+                          (output: TransactionOutput, index: number) => (
+                            <Transaction
+                              key={index}
+                              trx={output}
+                              type="output"
+                            />
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </TransactionBlockSection>
+
+                  <TransactionBlockSection>
+                    <div className="col col1">
+                      <div className="subCol sc1">Fee</div>
+                      <div className="subCol sc2">{transaction.fee} BTC</div>
+                    </div>
+                    <div className="col col2">
+                      <div className="divider"></div>
+                      <div>Total Fee sum - BTC</div>
+                    </div>
+                  </TransactionBlockSection>
+                </TransactionBlock>
+              ))}
+
+            <br />
+            <Button
+              onClick={handleLoadModeClick}
+              disabled={blockDetails.tx.length < paginationCount}
+            >
+              Load More Transactions (
+              {`${paginationCount}/${blockDetails.tx.length}`})
+            </Button>
+          </TransactionPage>
         </>
       )}
     </>

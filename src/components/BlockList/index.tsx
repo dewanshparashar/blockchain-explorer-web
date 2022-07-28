@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import axios, { AxiosResponse } from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useRoutes } from "react-router-dom";
 import { Block, BlockHeight } from "../../types/bitcoin";
 import { formatDistanceToNow } from "date-fns";
-import { TailSpin } from "react-loader-spinner";
 import Loader from "../common/Loader";
 
 const MAX_LIST_SIZE = 15;
@@ -109,7 +108,7 @@ export const Button = styled.button`
   padding: 0px 1.5rem;
   box-sizing: border-box;
   border: none;
-  cursor: pointer;
+  cursor: ${(props) => (!props.disabled ? "pointer" : "not-allowed")};
   outline: none;
   transition: all 0.3s ease 0s;
   opacity: 1;
@@ -125,6 +124,8 @@ export const Button = styled.button`
   line-height: 1;
   height: 2.7rem;
   flex-grow: 0;
+  opacity: ${(props) => (!props.disabled ? 1 : 0.5)};
+  gap: 0.5rem;
 `;
 
 export const StyledLink = styled(Link)`
@@ -186,8 +187,11 @@ const formatRelativeTime = (timestamp: number): string => {
 };
 
 const BlockList = () => {
+  let navigate = useNavigate();
+
   const [loading, setLoading] = useState<boolean>(true);
   const [blocksList, setBlocksList] = useState<Block[]>([]);
+  const [searchString, setSearchString] = useState<string>("");
 
   useEffect(() => {
     setLoading(true);
@@ -212,6 +216,22 @@ const BlockList = () => {
       });
   }, []);
 
+  const onSearchInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setSearchString(e.target.value);
+  };
+
+  const onSearchKeyUp = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e?.key === "Enter" || e?.code === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const handleSearch = () => {
+    if (searchString) {
+      navigate(`/block/${searchString}`);
+    }
+  };
+
   return (
     <>
       {/* Search section */}
@@ -227,8 +247,13 @@ const BlockList = () => {
         <input
           type="text"
           placeholder="Search for things like address, transaction, block"
+          value={searchString}
+          onChange={onSearchInput}
+          onKeyUp={onSearchKeyUp}
         />
-        <Button> Search </Button>
+        <Button onClick={handleSearch} disabled={!searchString}>
+          Search
+        </Button>
       </SearchBar>
 
       <SectionHeading>Latest Blocks</SectionHeading>
