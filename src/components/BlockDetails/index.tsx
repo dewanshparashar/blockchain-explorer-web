@@ -13,6 +13,7 @@ import {
 } from "../../types/bitcoin";
 import { DetailsTemplate } from "../../types/utils";
 import {
+  API_RATE_LIMIT_ERROR,
   Button,
   formatCommaNumber,
   formatHash,
@@ -558,9 +559,7 @@ const BlockDetails = () => {
                 });
               } else {
                 // error of rate limiting
-                setError(
-                  "Don't abuse the API. Please contact support@btcm.group"
-                );
+                setError(API_RATE_LIMIT_ERROR);
               }
 
               setLoading(false);

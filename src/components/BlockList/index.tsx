@@ -8,6 +8,8 @@ import Loader from "../common/Loader";
 import { LoadingIssue } from "../BlockDetails";
 
 const MAX_LIST_SIZE = 15;
+export const API_RATE_LIMIT_ERROR =
+  "Rate Limit Error: Don't abuse the API. Please try again after 15 seconds. Please contact support@btcm.group";
 
 const Table = styled.div`
   .tableHeaderRow {
@@ -263,9 +265,7 @@ const BlockList = () => {
                 setBlocksList(list);
               } else {
                 // api most probably rate limited
-                setError(
-                  "Don't abuse the API. Please contact support@btcm.group"
-                );
+                setError(API_RATE_LIMIT_ERROR);
               }
 
               setLoading(false);
@@ -325,55 +325,57 @@ const BlockList = () => {
       {error && <LoadingIssue type="list" errorMessage={error} />}
 
       {/* Block-listing section */}
-     {!error && ( <ListSection>
-        <ListSectionResponsiveScroll>
-          <Table className="blockList">
-            <div className="tableHeaderRow">
-              <div style={{ width: "10%" }} className="tableHeader cell">
-                Height
-              </div>
-              <div style={{ width: "45%" }} className="tableHeader cell">
-                Hash
-              </div>
-              <div style={{ width: "15%" }} className="tableHeader cell">
-                Mined
-              </div>
-              <div style={{ width: "15%" }} className="tableHeader cell">
-                Miner
-              </div>
-              <div style={{ width: "15%" }} className="tableHeader cell">
-                Size
-              </div>
-            </div>
-
-            {loading && <Loader />}           
-
-            {!loading &&
-              !error &&
-              blocksList.map((blockRow: Block) => (
-                <div className="tableRow" key={blockRow.hash}>
-                  <div style={{ width: "10%" }} className="cell">
-                    {blockRow.height}
-                  </div>
-                  <div style={{ width: "45%" }} className="cell">
-                    <StyledLink to={`/block/${blockRow.hash}`}>
-                      {formatHash(blockRow.hash)}
-                    </StyledLink>
-                  </div>
-                  <div style={{ width: "15%" }} className="cell">
-                    {formatRelativeTime(blockRow.timestamp)}
-                  </div>
-                  <div style={{ width: "15%" }} className="cell">
-                    {blockRow.extras?.pool_name || "Unknown"}
-                  </div>
-                  <div style={{ width: "15%" }} className="cell">
-                    {formatCommaNumber(blockRow.size)} bytes
-                  </div>
+      {!error && (
+        <ListSection>
+          <ListSectionResponsiveScroll>
+            <Table className="blockList">
+              <div className="tableHeaderRow">
+                <div style={{ width: "10%" }} className="tableHeader cell">
+                  Height
                 </div>
-              ))}
-          </Table>
-        </ListSectionResponsiveScroll>
-      </ListSection>)}
+                <div style={{ width: "45%" }} className="tableHeader cell">
+                  Hash
+                </div>
+                <div style={{ width: "15%" }} className="tableHeader cell">
+                  Mined
+                </div>
+                <div style={{ width: "15%" }} className="tableHeader cell">
+                  Miner
+                </div>
+                <div style={{ width: "15%" }} className="tableHeader cell">
+                  Size
+                </div>
+              </div>
+
+              {loading && <Loader />}
+
+              {!loading &&
+                !error &&
+                blocksList.map((blockRow: Block) => (
+                  <div className="tableRow" key={blockRow.hash}>
+                    <div style={{ width: "10%" }} className="cell">
+                      {blockRow.height}
+                    </div>
+                    <div style={{ width: "45%" }} className="cell">
+                      <StyledLink to={`/block/${blockRow.hash}`}>
+                        {formatHash(blockRow.hash)}
+                      </StyledLink>
+                    </div>
+                    <div style={{ width: "15%" }} className="cell">
+                      {formatRelativeTime(blockRow.timestamp)}
+                    </div>
+                    <div style={{ width: "15%" }} className="cell">
+                      {blockRow.extras?.pool_name || "Unknown"}
+                    </div>
+                    <div style={{ width: "15%" }} className="cell">
+                      {formatCommaNumber(blockRow.size)} bytes
+                    </div>
+                  </div>
+                ))}
+            </Table>
+          </ListSectionResponsiveScroll>
+        </ListSection>
+      )}
     </>
   );
 };
