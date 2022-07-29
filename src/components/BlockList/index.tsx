@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { Block, BlockHeight } from "../../types/bitcoin";
 import { formatDistanceToNow, format } from "date-fns";
 import Loader from "../common/Loader";
+import { LoadingIssue } from "../BlockDetails";
 
 const MAX_LIST_SIZE = 15;
 
@@ -62,6 +63,7 @@ const SearchBar = styled.div`
   width: 100%;
   height: 100%;
   position: relative;
+  margin: 1.5rem 0;
 
   .searchIcon {
     position: absolute;
@@ -169,8 +171,9 @@ const SectionHeadingStyled = styled.div`
   top: 0px;
   background-color: rgb(255, 255, 255, 0.7);
   backdrop-filter: blur(2px);
+  white-space: nowrap;
 
-  svg{
+  svg {
     margin-right: 0.75rem;
   }
 `;
@@ -196,7 +199,6 @@ export const SectionHeading = ({ children }: { children: React.ReactNode }) => {
 const ListSection = styled.div`
   width: 100%;
   overflow: scroll;
-  margin-top: 2rem;
   padding-bottom: 2rem;
 `;
 
@@ -207,14 +209,14 @@ const ListSectionResponsiveScroll = styled.div`
   padding-bottom: 2rem;
 `;
 
-const formatHash = (hash: string): string => {
+export const formatHash = (hash: string): string => {
   while (hash.substring(0, 1) === "0" && hash.length > 1) {
     hash = hash.substring(1, 9999);
   }
   return `0..${hash}`;
 };
 
-const formatSize = (size: number): string => {
+export const formatCommaNumber = (size: number): string => {
   return size.toLocaleString();
 };
 
@@ -237,11 +239,13 @@ const BlockList = () => {
   let navigate = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
   const [blocksList, setBlocksList] = useState<Block[]>([]);
   const [searchString, setSearchString] = useState<string>("");
 
   useEffect(() => {
     setLoading(true);
+    setError("");
 
     axios
       .get(`https://blockchain.info/blocks/${Date.now()}?format=json`)
@@ -252,12 +256,26 @@ const BlockList = () => {
 
         if (heights?.length) {
           const heightsString = heights.join(",");
-          axios
-            .get(`https://chain.api.btc.com/v3/block/${heightsString}`)
-            .then((response: AxiosResponse<{ data: Block[] }>) => {
-              setBlocksList(response.data?.data);
+          axios.get(`https://chain.api.btc.com/v3/block/${heightsString}`).then(
+            (response: AxiosResponse<{ data: Block[] }>) => {
+              const list = response.data?.data;
+              if (list) {
+                setBlocksList(list);
+              } else {
+                // api most probably rate limited
+                setError(
+                  "Don't abuse the API. Please contact support@btcm.group"
+                );
+              }
+
               setLoading(false);
-            });
+            },
+            (error: AxiosError) => {
+              setLoading(false);
+              const { message } = error || {};
+              setError(message);
+            }
+          );
         }
       });
   }, []);
@@ -304,8 +322,10 @@ const BlockList = () => {
 
       <SectionHeading>Latest Blocks</SectionHeading>
 
+      {error && <LoadingIssue type="list" errorMessage={error} />}
+
       {/* Block-listing section */}
-      <ListSection>
+     {!error && ( <ListSection>
         <ListSectionResponsiveScroll>
           <Table className="blockList">
             <div className="tableHeaderRow">
@@ -326,9 +346,10 @@ const BlockList = () => {
               </div>
             </div>
 
-            {loading && <Loader />}
+            {loading && <Loader />}           
 
             {!loading &&
+              !error &&
               blocksList.map((blockRow: Block) => (
                 <div className="tableRow" key={blockRow.hash}>
                   <div style={{ width: "10%" }} className="cell">
@@ -346,13 +367,13 @@ const BlockList = () => {
                     {blockRow.extras?.pool_name || "Unknown"}
                   </div>
                   <div style={{ width: "15%" }} className="cell">
-                    {formatSize(blockRow.size)} bytes
+                    {formatCommaNumber(blockRow.size)} bytes
                   </div>
                 </div>
               ))}
           </Table>
         </ListSectionResponsiveScroll>
-      </ListSection>
+      </ListSection>)}
     </>
   );
 };

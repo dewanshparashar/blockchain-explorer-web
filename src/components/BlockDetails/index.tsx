@@ -14,6 +14,8 @@ import {
 import { DetailsTemplate } from "../../types/utils";
 import {
   Button,
+  formatCommaNumber,
+  formatHash,
   formatTimestampToDate,
   SectionHeading,
   StyledLink,
@@ -30,7 +32,7 @@ const DETAILS_CONFIG: DetailsTemplate[] = [
   {
     key: "hash",
     label: "Hash",
-    accessor: (block: BlockDetailsType) => block.hash,
+    accessor: (block: BlockDetailsType) => formatHash(block.hash),
   },
   {
     key: "confirmations",
@@ -56,12 +58,13 @@ const DETAILS_CONFIG: DetailsTemplate[] = [
   {
     key: "txCount",
     label: "Number of Transactions",
-    accessor: (block: BlockDetailsType) => block.tx_count,
+    accessor: (block: BlockDetailsType) => formatCommaNumber(block.tx_count),
   },
   {
     key: "difficulty",
     label: "Difficulty",
-    accessor: (block: BlockDetailsType) => block.pool_difficulty,
+    accessor: (block: BlockDetailsType) =>
+      formatCommaNumber(block.difficulty_double),
   },
   {
     key: "merkelRoot",
@@ -76,22 +79,24 @@ const DETAILS_CONFIG: DetailsTemplate[] = [
   {
     key: "bits",
     label: "Bits",
-    accessor: (block: BlockDetailsType) => block.bits,
+    accessor: (block: BlockDetailsType) => formatCommaNumber(block.bits),
   },
   {
     key: "weight",
     label: "Weight",
-    accessor: (block: BlockDetailsType) => block.weight,
+    accessor: (block: BlockDetailsType) =>
+      `${formatCommaNumber(block.weight)} WU`,
   },
   {
     key: "size",
     label: "Size",
-    accessor: (block: BlockDetailsType) => block.size,
+    accessor: (block: BlockDetailsType) =>
+      `${formatCommaNumber(block.size)} bytes`,
   },
   {
     key: "nonce",
     label: "Nonce",
-    accessor: (block: BlockDetailsType) => block.nonce,
+    accessor: (block: BlockDetailsType) => formatCommaNumber(block.nonce),
   },
   {
     key: "volume",
@@ -144,6 +149,9 @@ const RowLabel = styled.div`
   text-overflow: ellipsis;
   height: auto;
   text-align: left;
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 50%;
 `;
 
 const RowValue = styled.div`
@@ -163,6 +171,9 @@ const RowValue = styled.div`
   text-overflow: ellipsis;
   height: auto;
   text-align: left;
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 50%;
 `;
 
 const Text = styled.p`
@@ -179,21 +190,32 @@ const Text = styled.p`
   color: rgb(53, 63, 82);
 `;
 
-const BlockLoadingIssue = ({
+export const LoadingIssue = ({
   id,
+  type = "block",
   errorMessage,
   handleBackClick,
 }: {
-  id: string | undefined;
+  id?: string | undefined;
+  type: "block" | "list";
   errorMessage: string | boolean;
-  handleBackClick: () => void;
+  handleBackClick?: () => void;
 }) => {
   return (
     <>
-      <Text>
-        <b>Unable to load block details for your query</b>
-        {id && <i>: {id}</i>}
-      </Text>
+      {type === "block" && (
+        <Text>
+          <b>Unable to load block details for your query</b>
+          {id && <i>: {id}</i>}
+        </Text>
+      )}
+
+      {type === "list" && (
+        <Text>
+          <b>Unable to load block listing</b>
+          {id && <i>: {id}</i>}
+        </Text>
+      )}
 
       {errorMessage && (
         <p
@@ -209,22 +231,26 @@ const BlockLoadingIssue = ({
       )}
 
       <Text>
-        This can be due to any of the 3 reasons :
+        This can be due to any of these reasons :
         <ul>
-          <li>
-            <p>
-              The block you were looking for doesn’t exist.
-              <br />
-              Check for any typos or mistakes in your search query
-            </p>
-          </li>
+          {type === "block" && (
+            <li>
+              <p>
+                The block you were looking for doesn’t exist.
+                <br />
+                Check for any typos or mistakes in your search query
+              </p>
+            </li>
+          )}
           <li>
             <p>
               Your BTC.com API has been rate-limited because of detected abuse.
+              <br />
+              Please try again after{" "}
+              <span style={{ color: "red" }}>15 seconds</span>.
             </p>
           </li>
           <li>
-            {" "}
             <p>
               Something went wrong in the backend server while loading the data.
               <br />
@@ -235,9 +261,11 @@ const BlockLoadingIssue = ({
         </ul>
       </Text>
       <br />
-      <Button onClick={handleBackClick}>
-        <MdArrowBack /> Go Back to Blocks
-      </Button>
+      {handleBackClick && (
+        <Button onClick={handleBackClick}>
+          <MdArrowBack /> Go Back to Blocks
+        </Button>
+      )}
     </>
   );
 };
@@ -522,11 +550,19 @@ const BlockDetails = () => {
             .then((details: AxiosResponse<{ data: BlockType }>) => {
               const blockData: BlockType = details.data.data;
 
-              setBlockDetails({
-                ...blockData,
-                tx: transactionsData,
-                tx_vol: transactionVolume,
-              });
+              if (blockData) {
+                setBlockDetails({
+                  ...blockData,
+                  tx: transactionsData,
+                  tx_vol: transactionVolume,
+                });
+              } else {
+                // error of rate limiting
+                setError(
+                  "Don't abuse the API. Please contact support@btcm.group"
+                );
+              }
+
               setLoading(false);
             });
         },
@@ -560,7 +596,8 @@ const BlockDetails = () => {
       </SectionHeading>
       {loading && <Loader />}
       {!loading && error && (
-        <BlockLoadingIssue
+        <LoadingIssue
+          type="block"
           id={id}
           errorMessage={error}
           handleBackClick={handleBackClick}
@@ -619,13 +656,11 @@ const BlockDetails = () => {
                           <div>
                             {transaction.inputs.map(
                               (input: TransactionInput, index: number) => (
-                                <>
-                                  <Transaction
-                                    key={index}
-                                    trx={input.prev_out}
-                                    type="input"
-                                  />
-                                </>
+                                <Transaction
+                                  key={index}
+                                  trx={input.prev_out}
+                                  type="input"
+                                />
                               )
                             )}
                           </div>

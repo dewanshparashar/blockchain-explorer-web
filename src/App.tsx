@@ -11,8 +11,7 @@ const Container = styled.div`
   height: 100%;
   margin: auto;
   max-width: 1000px;
-  padding: 2rem;
-  margin-top: 1rem;
+  padding: 1rem 2rem;
 `;
 
 function App() {
