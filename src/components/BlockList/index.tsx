@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import axios, { AxiosResponse } from "axios";
-import { Link, useNavigate, useRoutes } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Block, BlockHeight } from "../../types/bitcoin";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import Loader from "../common/Loader";
 
 const MAX_LIST_SIZE = 15;
@@ -148,7 +148,7 @@ export const StyledLink = styled(Link)`
   width: 100%;
 `;
 
-export const SectionHeading = styled.div`
+const SectionHeadingStyled = styled.div`
   display: flex;
   -webkit-box-align: center;
   align-items: center;
@@ -169,12 +169,35 @@ export const SectionHeading = styled.div`
   top: 0px;
   background-color: rgb(255, 255, 255, 0.7);
   backdrop-filter: blur(2px);
+
+  svg{
+    margin-right: 0.75rem;
+  }
 `;
+
+export const SectionHeading = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <SectionHeadingStyled>
+      <svg viewBox="0 0 32 32" height="32px" width="32px">
+        <g fill="none" fill-rule="evenodd">
+          <circle cx="16" cy="16" r="16" fill="#F7931A"></circle>
+          <path
+            fill="#FFF"
+            fill-rule="nonzero"
+            d="M23.189 14.02c.314-2.096-1.283-3.223-3.465-3.975l.708-2.84-1.728-.43-.69 2.765c-.454-.114-.92-.22-1.385-.326l.695-2.783L15.596 6l-.708 2.839c-.376-.086-.746-.17-1.104-.26l.002-.009-2.384-.595-.46 1.846s1.283.294 1.256.312c.7.175.826.638.805 1.006l-.806 3.235c.048.012.11.03.18.057l-.183-.045-1.13 4.532c-.086.212-.303.531-.793.41.018.025-1.256-.313-1.256-.313l-.858 1.978 2.25.561c.418.105.828.215 1.231.318l-.715 2.872 1.727.43.708-2.84c.472.127.93.245 1.378.357l-.706 2.828 1.728.43.715-2.866c2.948.558 5.164.333 6.097-2.333.752-2.146-.037-3.385-1.588-4.192 1.13-.26 1.98-1.003 2.207-2.538zm-3.95 5.538c-.533 2.147-4.148.986-5.32.695l.95-3.805c1.172.293 4.929.872 4.37 3.11zm.535-5.569c-.487 1.953-3.495.96-4.47.717l.86-3.45c.975.243 4.118.696 3.61 2.733z"
+          ></path>
+        </g>
+      </svg>
+      {children}
+    </SectionHeadingStyled>
+  );
+};
 
 const ListSection = styled.div`
   width: 100%;
   overflow: scroll;
   margin-top: 2rem;
+  padding-bottom: 2rem;
 `;
 
 const ListSectionResponsiveScroll = styled.div`
@@ -199,6 +222,17 @@ const formatRelativeTime = (timestamp: number): string => {
   return formatDistanceToNow(new Date(timestamp * 1000));
 };
 
+export const formatTimestampToDate = (timestamp: number): string => {
+  let formattedDate = "";
+  try {
+    formattedDate = format(new Date(timestamp * 1000), "yyyy-MM-dd hh:mm");
+  } catch {
+    formattedDate = `Timestamp error : ${timestamp}`;
+  }
+
+  return formattedDate;
+};
+
 const BlockList = () => {
   let navigate = useNavigate();
 
@@ -208,6 +242,7 @@ const BlockList = () => {
 
   useEffect(() => {
     setLoading(true);
+
     axios
       .get(`https://blockchain.info/blocks/${Date.now()}?format=json`)
       .then((response: AxiosResponse<BlockHeight[]>) => {
@@ -218,11 +253,9 @@ const BlockList = () => {
         if (heights?.length) {
           const heightsString = heights.join(",");
           axios
-            .get(
-              `https://api.blockchain.info/haskoin-store/btc/block/heights?heights=${heightsString}&notx=true`
-            )
-            .then((response: AxiosResponse<Block[]>) => {
-              setBlocksList(response.data);
+            .get(`https://chain.api.btc.com/v3/block/${heightsString}`)
+            .then((response: AxiosResponse<{ data: Block[] }>) => {
+              setBlocksList(response.data?.data);
               setLoading(false);
             });
         }
@@ -279,7 +312,7 @@ const BlockList = () => {
               <div style={{ width: "10%" }} className="tableHeader cell">
                 Height
               </div>
-              <div style={{ width: "40%" }} className="tableHeader cell">
+              <div style={{ width: "45%" }} className="tableHeader cell">
                 Hash
               </div>
               <div style={{ width: "15%" }} className="tableHeader cell">
@@ -288,7 +321,7 @@ const BlockList = () => {
               <div style={{ width: "15%" }} className="tableHeader cell">
                 Miner
               </div>
-              <div style={{ width: "20%" }} className="tableHeader cell">
+              <div style={{ width: "15%" }} className="tableHeader cell">
                 Size
               </div>
             </div>
@@ -301,18 +334,18 @@ const BlockList = () => {
                   <div style={{ width: "10%" }} className="cell">
                     {blockRow.height}
                   </div>
-                  <div style={{ width: "40%" }} className="cell">
+                  <div style={{ width: "45%" }} className="cell">
                     <StyledLink to={`/block/${blockRow.hash}`}>
                       {formatHash(blockRow.hash)}
                     </StyledLink>
                   </div>
                   <div style={{ width: "15%" }} className="cell">
-                    {formatRelativeTime(blockRow.time)}
+                    {formatRelativeTime(blockRow.timestamp)}
                   </div>
                   <div style={{ width: "15%" }} className="cell">
-                    {blockRow.tx?.[0]}
+                    {blockRow.extras?.pool_name || "Unknown"}
                   </div>
-                  <div style={{ width: "20%" }} className="cell">
+                  <div style={{ width: "15%" }} className="cell">
                     {formatSize(blockRow.size)} bytes
                   </div>
                 </div>

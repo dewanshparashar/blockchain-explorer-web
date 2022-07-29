@@ -9,12 +9,22 @@ import {
   TransactionInput,
   TransactionOutput,
   TransactionMode,
+  Block as BlockType,
 } from "../../types/bitcoin";
 import { DetailsTemplate } from "../../types/utils";
-import { Button, SectionHeading, StyledLink } from "../BlockList";
+import {
+  Button,
+  formatTimestampToDate,
+  SectionHeading,
+  StyledLink,
+} from "../BlockList";
 import Loader from "../common/Loader";
 import { MdArrowBack, MdLanguage } from "react-icons/md";
 import { format } from "date-fns";
+
+const parseBtcUnit = (satoshiNum: number): string => {
+  return `${(satoshiNum / 10e7).toFixed(8)} BTC`;
+};
 
 const DETAILS_CONFIG: DetailsTemplate[] = [
   {
@@ -30,7 +40,8 @@ const DETAILS_CONFIG: DetailsTemplate[] = [
   {
     key: "timestamp",
     label: "Timestamp",
-    accessor: (block: BlockDetailsType) => block.time,
+    accessor: (block: BlockDetailsType) =>
+      formatTimestampToDate(block.timestamp),
   },
   {
     key: "height",
@@ -40,17 +51,17 @@ const DETAILS_CONFIG: DetailsTemplate[] = [
   {
     key: "miner",
     label: "Miner",
-    accessor: (block: BlockDetailsType) => block.relayed_by,
+    accessor: (block: BlockDetailsType) => block.extras?.pool_name || "Unknown",
   },
   {
     key: "txCount",
     label: "Number of Transactions",
-    accessor: (block: BlockDetailsType) => block.n_tx,
+    accessor: (block: BlockDetailsType) => block.tx_count,
   },
   {
     key: "difficulty",
     label: "Difficulty",
-    accessor: (block: BlockDetailsType) => block.work,
+    accessor: (block: BlockDetailsType) => block.pool_difficulty,
   },
   {
     key: "merkelRoot",
@@ -60,7 +71,7 @@ const DETAILS_CONFIG: DetailsTemplate[] = [
   {
     key: "version",
     label: "Version",
-    accessor: (block: BlockDetailsType) => block.ver,
+    accessor: (block: BlockDetailsType) => block.version,
   },
   {
     key: "bits",
@@ -85,17 +96,17 @@ const DETAILS_CONFIG: DetailsTemplate[] = [
   {
     key: "volume",
     label: "Transaction Volume",
-    accessor: (block: BlockDetailsType) => `${block.nonce} BTC`,
+    accessor: (block: BlockDetailsType) => parseBtcUnit(block.tx_vol),
   },
   {
     key: "blockReward",
     label: "Block Reward",
-    accessor: (block: BlockDetailsType) => `${block.nonce} BTC`,
+    accessor: (block: BlockDetailsType) => parseBtcUnit(block.reward_block),
   },
   {
     key: "feeReward",
     label: "Fee Reward",
-    accessor: (block: BlockDetailsType) => `${block.fees} BTC`,
+    accessor: (block: BlockDetailsType) => parseBtcUnit(block.reward_fees),
   },
 ];
 
@@ -198,15 +209,25 @@ const BlockLoadingIssue = ({
       )}
 
       <Text>
-        This can be due to any of the two reasons :
+        This can be due to any of the 3 reasons :
         <ul>
           <li>
-            The block you were looking for doesn’t exist.{" "}
-            <p>Check for any typos or mistakes in your search query</p>
+            <p>
+              The block you were looking for doesn’t exist.
+              <br />
+              Check for any typos or mistakes in your search query
+            </p>
           </li>
           <li>
-            Something went wrong in the backend server while loading the data.{" "}
             <p>
+              Your BTC.com API has been rate-limited because of detected abuse.
+            </p>
+          </li>
+          <li>
+            {" "}
+            <p>
+              Something went wrong in the backend server while loading the data.
+              <br />
               It is recommended to add a CORS-unblocker extension to your Chrome
               browser before testing.
             </p>
@@ -337,6 +358,7 @@ const TransactionBlockSection = styled.div`
       padding: 0.8rem 0px;
       -webkit-box-pack: start;
       justify-content: flex-start;
+      color: rgb(103, 113, 133);
     }
 
     .subCol.sc2 {
@@ -346,7 +368,7 @@ const TransactionBlockSection = styled.div`
       text-rendering: optimizeLegibility;
       box-sizing: border-box;
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       align-items: flex-start;
       width: calc(100% - 100px);
       padding: 0.8rem 0px;
@@ -391,7 +413,6 @@ const TransactionPageResponsiveScroll = styled.div`
   min-width: 900px;
   display: flex;
   flex-direction: column;
-  padding-bottom: 2rem;
 `;
 
 const Divider = styled.div`
@@ -400,6 +421,28 @@ const Divider = styled.div`
   margin: 0.5rem 0rem;
   background: rgb(223, 227, 235);
   display: block;
+`;
+
+const TransactionValue = styled.span`
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  white-space: nowrap;
+  box-sizing: border-box;
+  font-weight: 500;
+  font-size: 14px;
+  text-transform: none;
+  font-style: normal;
+  opacity: 1;
+  font-family: Inter, Helvetica, sans-serif;
+  font-feature-settings: "calt" 0;
+  display: block;
+  padding: 0.25rem;
+  color: rgb(0, 135, 90);
+  background: rgb(209, 240, 219);
+  border: 1px solid rgb(209, 240, 219);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  width: fit-content !important;
 `;
 
 const Transaction = ({
@@ -424,8 +467,8 @@ const Transaction = ({
         )}
       </StyledLink>
       <div className="additionalDetails">
-        {trx.addr && <div>{trx.value} BTC</div>}
-        {!trx.addr && type === "output" && <div>0.00000000 BTC</div>}
+        {trx.addr && <div>{parseBtcUnit(trx.value)}</div>}
+        {!trx.addr && type === "output" && <div>{parseBtcUnit(0)}</div>}
         {trx.addr && trx.spent && (
           <MdLanguage style={{ color: "green" }} title="Unspent" />
         )}
@@ -454,10 +497,38 @@ const BlockDetails = () => {
   useEffect(() => {
     if (id) {
       setLoading(true);
+
+      // get transaction details
       axios.get(`https://blockchain.info/rawblock/${id}`).then(
-        (response: AxiosResponse<BlockDetailsType>) => {
-          setBlockDetails(response.data);
-          setLoading(false);
+        (response: AxiosResponse<{ tx: TransactionType[] }>) => {
+          let transactionsData = response.data.tx;
+
+          let transactionVolume = 0;
+          transactionsData = transactionsData.map(
+            (transaction: TransactionType) => {
+              let currentTransactionValue = 0;
+              transaction.out.forEach((output): void => {
+                transactionVolume += output.value;
+                currentTransactionValue += output.value;
+              });
+
+              return { ...transaction, trx_val: currentTransactionValue };
+            }
+          );
+
+          // get block details - with complete additional details as well
+          axios
+            .get(`https://chain.api.btc.com/v3/block/${id}`)
+            .then((details: AxiosResponse<{ data: BlockType }>) => {
+              const blockData: BlockType = details.data.data;
+
+              setBlockDetails({
+                ...blockData,
+                tx: transactionsData,
+                tx_vol: transactionVolume,
+              });
+              setLoading(false);
+            });
         },
         (error: AxiosError) => {
           setLoading(false);
@@ -478,7 +549,10 @@ const BlockDetails = () => {
     <>
       <SectionHeading>
         <FlexRow>
-          Block Details
+          <div>
+            <span style={{ color: "#b4b1b1" }}>BTC&nbsp;/&nbsp;</span> Block
+          </div>
+
           <Button onClick={handleBackClick}>
             <MdArrowBack /> Blocks
           </Button>
@@ -495,7 +569,14 @@ const BlockDetails = () => {
       {!loading && !error && blockDetails && (
         <>
           <Divider />
-          <Text>Block at depth 242424xxxx in the Bitcoin Blockchain.</Text>
+          <Text>
+            Block at depth {blockDetails.height} in the Bitcoin Blockchain. This
+            block was mined on {formatTimestampToDate(blockDetails.timestamp)}{" "}
+            by {blockDetails?.extras?.pool_name || "Unknown"}. It currently has{" "}
+            {blockDetails.confirmations} confirmations on the Bitcoin
+            blockchain.
+          </Text>
+
           {DETAILS_CONFIG.map((template: DetailsTemplate) => (
             <Row key={template.key}>
               <RowLabel>{template.label}</RowLabel>
@@ -527,12 +608,7 @@ const BlockDetails = () => {
                       </div>
                       <div className="col col2">
                         <div className="divider"></div>
-                        <div>
-                          {format(
-                            new Date(transaction.time * 1000),
-                            "yyyy-MM-dd hh:mm"
-                          )}
-                        </div>
+                        <div>{formatTimestampToDate(transaction.time)}</div>
                       </div>
                     </TransactionBlockSection>
 
@@ -592,11 +668,24 @@ const BlockDetails = () => {
                     <TransactionBlockSection>
                       <div className="col col1">
                         <div className="subCol sc1">Fee</div>
-                        <div className="subCol sc2">{transaction.fee} BTC</div>
+                        <div className="subCol sc2">
+                          <div>{parseBtcUnit(transaction.fee)}</div>
+                          <div>{`(${(
+                            transaction.fee / transaction.size
+                          ).toFixed(3)} sat/B - ${(
+                            transaction.fee / transaction.weight
+                          ).toFixed(3)} sat/WU - ${
+                            transaction.size
+                          } bytes)`}</div>
+                        </div>
                       </div>
                       <div className="col col2">
                         <div className="divider"></div>
-                        <div>Total Fee sum - BTC</div>
+                        <div>
+                          <TransactionValue>
+                            {parseBtcUnit(transaction.trx_val)}
+                          </TransactionValue>
+                        </div>
                       </div>
                     </TransactionBlockSection>
                   </TransactionBlock>

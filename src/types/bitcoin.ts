@@ -1,20 +1,31 @@
 export type Block = {
-  bits: number;
-  fees: number;
-  hash: string;
   height: number;
-  mainchain: boolean;
-  merkle: string;
-  nonce: number;
-  outputs: number;
-  previous: string;
-  size: number;
-  subsidy: number;
-  time: number;
-  tx: string[];
   version: number;
+  mrkl_root: string;
+  timestamp: number;
+  bits: number;
+  nonce: number;
+  hash: string;
+  prev_block_hash: string;
+  next_block_hash: string;
+  size: number;
+  pool_difficulty: number;
+  difficulty: number;
+  difficulty_double: number;
+  tx_count: number;
+  reward_block: number;
+  reward_fees: number;
+  confirmations: number;
+  is_orphan: false;
+  curr_max_timestamp: number;
+  is_sw_block: true;
+  stripped_size: number;
+  sigops: number;
   weight: number;
-  work: number;
+  extras?: {
+    pool_name?: string;
+    pool_link?: string;
+  };
 };
 
 export type BlockHeight = {
@@ -60,28 +71,12 @@ export type Transaction = {
   block_height: number;
   inputs: TransactionInput[];
   out: TransactionOutput[];
+  trx_val: number;
 };
 
-export type BlockDetails = {
-  hash: string;
-  ver: number;
-  prev_block: string;
-  mrkl_root: string;
-  time: number;
-  bits: number;
-  nonce: number;
-  n_tx: number;
-  size: number;
-  block_index: number;
-  main_chain: boolean;
-  height: number;
-  received_time: number;
-  relayed_by: string;
+export type BlockDetails = Block & {
   tx: Transaction[];
-  weight: number;
-  fees: number;
-  work: number;
-  confirmations: number;
+  tx_vol: number;
 };
 
 export type TransactionMode = "input" | "output";
