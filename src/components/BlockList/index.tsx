@@ -180,6 +180,18 @@ const SectionHeadingStyled = styled.div`
   }
 `;
 
+const CORSWarning = styled.div`
+  width: 100%;
+  background: rgb(12, 108, 242);
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  text-align: center;
+  padding: 0.5rem;
+  z-index: 10;
+`;
+
 export const SectionHeading = ({ children }: { children: React.ReactNode }) => {
   return (
     <SectionHeadingStyled>
@@ -244,6 +256,9 @@ const BlockList = () => {
   const [error, setError] = useState<string>("");
   const [blocksList, setBlocksList] = useState<Block[]>([]);
   const [searchString, setSearchString] = useState<string>("");
+  const [corsWarning, setCorsWarning] = useState<boolean>(
+    !!(localStorage?.getItem?.("corsResolved") !== "true")
+  );
 
   useEffect(() => {
     setLoading(true);
@@ -263,6 +278,10 @@ const BlockList = () => {
               const list = response.data?.data;
               if (list) {
                 setBlocksList(list);
+
+                // now that api is successful, set corswarning to false
+                setCorsWarning(false);
+                localStorage?.setItem?.("corsResolved", "true");
               } else {
                 // api most probably rate limited
                 setError(API_RATE_LIMIT_ERROR);
@@ -298,6 +317,12 @@ const BlockList = () => {
 
   return (
     <>
+      {corsWarning && (
+        <CORSWarning>
+          Please ensure you have a CORS extension enabled to access the API's.
+        </CORSWarning>
+      )}
+
       {/* Search section */}
       <SearchBar>
         <svg
