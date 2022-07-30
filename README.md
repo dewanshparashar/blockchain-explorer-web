@@ -4,8 +4,8 @@ A clean, professional looking, mobile responsive clone of a Bitcoin Explorer, co
 
 ## Demo
 
-- https://blockchain-explorer-web.vercel.app/
 - Before accessing, please make sure CORS is allowed using this extension - https://chrome.google.com/webstore/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf?hl=en
+- Demo : https://blockchain-explorer-web.vercel.app/
 
 ---
 
