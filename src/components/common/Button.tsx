@@ -1,9 +1,7 @@
 import styled from "styled-components";
 
 const Button = styled.button`
-  -webkit-font-smoothing: antialiased;
   list-style-type: none;
-  font-feature-settings: "calt" 0;
   display: flex;
   flex-direction: row;
   -webkit-box-pack: center;
@@ -17,8 +15,6 @@ const Button = styled.button`
   outline: none;
   transition: all 0.3s ease 0s;
   opacity: 1;
-  font-family: Inter, Helvetica, sans-serif;
-  font-weight: 500;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;

@@ -1,11 +1,6 @@
 import styled from "styled-components";
 
-export const Row = styled.div`
-  font-size: 100%;
-  font-style: normal;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  box-sizing: border-box;
+export const Row = styled.div` 
   display: flex;
   flex-direction: row;
   -webkit-box-pack: start;
@@ -17,16 +12,11 @@ export const Row = styled.div`
 `;
 
 export const RowLabel = styled.div`
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  box-sizing: border-box;
   font-weight: 500;
   font-size: 14px;
   text-transform: none;
   font-style: normal;
-  opacity: 1;
-  font-family: Inter, Helvetica, sans-serif;
-  font-feature-settings: "calt" 0;
+  opacity: 1;  
   color: rgb(103, 113, 133);
   width: 50%;
   padding: 0.8rem 0px;
@@ -39,17 +29,11 @@ export const RowLabel = styled.div`
   width: 50%;
 `;
 
-export const RowValue = styled.div`
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  box-sizing: border-box;
-  font-weight: 500;
+export const RowValue = styled.div` 
   font-size: 14px;
   text-transform: none;
   font-style: normal;
-  opacity: 1;
-  font-family: Inter, Helvetica, sans-serif;
-  font-feature-settings: "calt" 0;
+  opacity: 1;  
   color: rgb(53, 63, 82);
   padding: 0.8rem 0px;
   overflow: hidden;

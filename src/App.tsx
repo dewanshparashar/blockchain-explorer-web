@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import styled from "styled-components";
-import "./App.css";
 
 import BlockDetails from "./components/BlockDetails";
 import BlockList from "./components/BlockList";

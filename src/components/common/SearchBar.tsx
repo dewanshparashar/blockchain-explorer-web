@@ -23,15 +23,12 @@ const SearchBarStyled = styled.div`
     height: 2.7rem;
     width: 100%;
     padding: 0px 1rem;
-    box-sizing: border-box;
-    font-family: Inter;
     font-size: 1rem;
     color: rgb(53, 63, 82);
     border-width: 1px;
     border-color: rgb(223, 227, 235);
     border-style: solid;
     border-radius: 0.25rem;
-    /* background-color: rgb(255, 255, 255); */
     background: #f2f5ff;
     background-image: none;
     outline-width: 0px;

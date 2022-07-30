@@ -4,11 +4,7 @@ import { TransactionMode, TransactionOutput } from "../../types/bitcoin";
 import { parseBtcUnit } from "../../utils/helpers";
 import Link from "./Link";
 
-const TransactionRow = styled.div`
-  font-size: 100%;
-  font-style: normal;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+const TransactionRow = styled.div`  
   white-space: nowrap;
   box-sizing: border-box;
   display: flex;
@@ -28,10 +24,6 @@ const TransactionRow = styled.div`
   }
 
   .additionalDetails {
-    font-size: 100%;
-    font-style: normal;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
     white-space: nowrap;
     box-sizing: border-box;
     display: flex;

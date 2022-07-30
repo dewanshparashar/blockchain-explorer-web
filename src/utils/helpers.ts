@@ -1,3 +1,7 @@
+/*
+All the helper functions, tranformation and formatting functions used in the project here
+*/
+
 import { formatDistanceToNow, format } from "date-fns";
 import { Transaction } from "../types/bitcoin";
 

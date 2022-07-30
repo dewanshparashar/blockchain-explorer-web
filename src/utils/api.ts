@@ -1,3 +1,7 @@
+/*
+All the API's used by the project here
+*/
+
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { Block, BlockHeight, Transaction } from "../types/bitcoin";
 

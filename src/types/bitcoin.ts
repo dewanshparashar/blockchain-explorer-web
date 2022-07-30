@@ -1,5 +1,9 @@
-import React from "react";
+/*
+  For Bitcoin - these are the types/contracts which we receive from API's
+  This is a good documentation and check for all the keys from project maintenance perspective
+*/
 
+// Bitcoin block - listing page
 export type Block = {
   height: number;
   version: number;
@@ -37,6 +41,7 @@ export type BlockHeight = {
   time: number;
 };
 
+// Bitcoin transaction output
 export type TransactionOutput = {
   type: number;
   spent: boolean;
@@ -48,6 +53,7 @@ export type TransactionOutput = {
   addr: string;
 };
 
+// Bitcoin transaction input
 export type TransactionInput = {
   sequence: number;
   witness: number;
@@ -56,6 +62,7 @@ export type TransactionInput = {
   prev_out: TransactionOutput;
 };
 
+// Complete Bitcoin transaction details
 export type Transaction = {
   hash: string;
   ver: number;
@@ -76,6 +83,7 @@ export type Transaction = {
   trx_val: number;
 };
 
+// Bitcoin block - complete details page (block + extra keys + transactions)
 export type BlockDetails = Block & {
   tx: Transaction[];
   tx_vol: number;

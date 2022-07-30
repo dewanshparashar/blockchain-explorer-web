@@ -6,16 +6,11 @@ const SectionHeadingStyled = styled.div`
   align-items: center;
   width: 100%;
   padding: 1.5rem 0px;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  box-sizing: border-box;
   font-weight: 700;
   font-size: 1.5rem;
   text-transform: none;
   font-style: normal;
   opacity: 1;
-  font-family: Inter, Helvetica, sans-serif;
-  font-feature-settings: "calt" 0;
   color: rgb(53, 63, 82);
   position: sticky;
   top: 0px;

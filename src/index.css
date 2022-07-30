@@ -23,3 +23,15 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+.darkMode{
+  filter: hue-rotate(-180deg)invert(1)contrast(0.8);
+  background: white;
+}
+
+*{
+  font-size: 100%;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  box-sizing: border-box;
+}

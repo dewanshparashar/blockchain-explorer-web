@@ -1,11 +1,6 @@
 import styled from "styled-components";
 
 export const TransactionBlock = styled.div`
-  font-size: 100%;
-  font-style: normal;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   -webkit-box-pack: start;
@@ -17,11 +12,6 @@ export const TransactionBlock = styled.div`
 `;
 
 export const TransactionBlockSection = styled.div`
-  font-size: 100%;
-  font-style: normal;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  box-sizing: border-box;
   display: flex;
   -webkit-box-pack: start;
   justify-content: flex-start;
@@ -30,11 +20,6 @@ export const TransactionBlockSection = styled.div`
   flex-direction: row;
 
   .col {
-    font-size: 100%;
-    font-style: normal;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    box-sizing: border-box;
     display: flex;
     flex-direction: row;
     -webkit-box-pack: start;
@@ -43,11 +28,6 @@ export const TransactionBlockSection = styled.div`
     width: 50%;
 
     &.col2 {
-      font-size: 100%;
-      font-style: normal;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      box-sizing: border-box;
       display: flex;
       flex-direction: row;
       align-items: flex-start;
@@ -64,11 +44,6 @@ export const TransactionBlockSection = styled.div`
     }
 
     .subCol.sc1 {
-      font-size: 100%;
-      font-style: normal;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      box-sizing: border-box;
       display: flex;
       flex-direction: row;
       align-items: flex-start;
@@ -80,11 +55,6 @@ export const TransactionBlockSection = styled.div`
     }
 
     .subCol.sc2 {
-      font-size: 100%;
-      font-style: normal;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
@@ -95,11 +65,6 @@ export const TransactionBlockSection = styled.div`
     }
 
     .divider {
-      font-size: 100%;
-      font-style: normal;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      box-sizing: border-box;
       display: flex;
       flex-direction: row;
       align-items: flex-start;
@@ -125,17 +90,11 @@ export const TransactionPageResponsiveScroll = styled.div`
 `;
 
 export const TransactionValue = styled.span`
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  white-space: nowrap;
-  box-sizing: border-box;
   font-weight: 500;
   font-size: 14px;
   text-transform: none;
   font-style: normal;
   opacity: 1;
-  font-family: Inter, Helvetica, sans-serif;
-  font-feature-settings: "calt" 0;
   display: block;
   padding: 0.25rem;
   color: rgb(0, 135, 90);
