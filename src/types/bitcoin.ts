@@ -80,3 +80,9 @@ export type BlockDetails = Block & {
 };
 
 export type TransactionMode = "input" | "output";
+
+export type DetailsTemplate = {
+  key: string;
+  label: string;
+  accessor: (block: BlockDetails) => number | string;
+};
