@@ -77,7 +77,7 @@ const LoadingIssue = ({
             <p>
               Your BTC.com API has been rate-limited because of detected abuse.
               <br />
-              Please try again{" "}
+              Please refresh the page{" "}
               <span style={{ color: "red" }}>
                 <Countdown
                   date={Date.now() + 15000}

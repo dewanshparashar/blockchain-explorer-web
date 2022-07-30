@@ -71,7 +71,7 @@ export const BlockDetailsComponent = ({
             blockchain.
           </Text>
 
-          {DETAILS_CONFIG.map((template: DetailsTemplate) => (
+          {DETAILS_CONFIG.map((template: DetailsTemplate<BlockDetails>) => (
             <Row key={template.key}>
               <RowLabel>{template.label}</RowLabel>
               <RowValue>{template.accessor(blockDetails)}</RowValue>

@@ -1,4 +1,5 @@
 import {
+  BlockDetails,
   BlockDetails as BlockDetailsType,
   DetailsTemplate,
 } from "../../types/bitcoin";
@@ -9,7 +10,7 @@ import {
   parseBtcUnit,
 } from "../../utils/helpers";
 
-export const DETAILS_CONFIG: DetailsTemplate[] = [
+export const DETAILS_CONFIG: DetailsTemplate<BlockDetails>[] = [
   {
     key: "hash",
     label: "Hash",

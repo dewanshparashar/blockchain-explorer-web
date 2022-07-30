@@ -1,3 +1,5 @@
+import React from "react";
+
 export type Block = {
   height: number;
   version: number;
@@ -81,8 +83,9 @@ export type BlockDetails = Block & {
 
 export type TransactionMode = "input" | "output";
 
-export type DetailsTemplate = {
+export type DetailsTemplate<T> = {
   key: string;
   label: string;
-  accessor: (block: BlockDetails) => number | string;
+  width?: string;
+  accessor: (block: T) => number | string | React.ReactNode;
 };
